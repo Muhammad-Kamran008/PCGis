@@ -1,107 +1,98 @@
+# PCGis – Procedural GIS Integration Plugin for Unreal Engine
+
+**PCGis** is an Unreal Engine plugin that integrates **GIS shapefile data** with **Cesium 3D terrain streaming** and Unreal’s **Procedural Content Generation (PCG)** framework.
+It enables scalable, automated, and geospatially accurate **procedural world generation** directly from real-world GIS data.
 
 ---
 
-# 🗺️ PCGis: Procedural GIS Data Loader for Unreal Engine & Cesium
+## Overview
 
-**Bridge the gap between Geographic Information Systems (GIS) and high-fidelity Unreal Engine worlds.** PCGis is a powerful plugin that seamlessly imports real-world GIS data from Shapefiles and procedurally generates vast, dynamic landscapes directly onto Cesium's global 3D terrain.
+PCGis bridges the gap between **geospatial data** and **real-time 3D visualization**.
+It processes shapefile data (both **point** and **polygon** types), generates procedural content on Cesium terrain, and uses an internal **SQLite-based caching system** to achieve high performance for large-scale datasets.
 
----
-
-## ✨ Features
-
-*   **Dual Data Type Support:** Effortlessly handle both **Point Data** (for placing specific assets like buildings, trees, and rocks) and **Polygon Data** (for procedural generation of forests, foliage, and other area-based content).
-*   **Seamless Cesium Integration:** Automatically clamps all spawned assets and procedural points to the Cesium terrain, whether you're using Cesium ion's streaming terrain or Google Photorealistic 3D Tiles.
-*   **Procedural Content Generation (PCG) Powered:** Leverages Unreal Engine 5's powerful PCG framework to generate millions of instances with complex rules, all perfectly aligned to the real-world terrain.
-*   **Smart SQLite Caching System:** A custom-built caching layer stores generated point data. On subsequent loads, data is read from the cache for near-instantaneous regeneration, eliminating costly re-processing and stabilizing frame rates.
-*   **High-Performance Runtime Generation:** Utilizes Unreal Engine's Hierarchical Instanced Static Mesh (HISM) components for optimal performance, allowing you to render millions of procedurally placed objects efficiently.
-*   **Asynchronous Processing:** Manages the heavy lifting of terrain height sampling asynchronously to prevent engine lock-ups, providing a smoother user experience during initial processing.
+The plugin supports workflows that can efficiently spawn millions of procedural assets—such as vegetation, cultural objects, or infrastructure—accurately clamped to real-world terrain.
 
 ---
 
-## 🚀 How It Works
+## Core Features
 
-PCGis operates through an intelligent, two-stage pipeline designed for both flexibility and performance.
+### 1. GIS Data Integration
 
-### Stage 1: Initial Processing & Caching (On Data Change)
-1.  **Data Ingestion:** Loads `.shp` Shapefiles containing your Point or Polygon data.
-2.  **Point Processing (For Polygons):** For polygon data, a custom PCG node samples the interior based on density attributes and uses Cesium's `SampleHeightMostDetailed` function to clamp each point to the terrain.
-3.  **SQLite Cache Population:** The calculated world positions (georeferenced) for all points are stored in a local SQLite database. This one-time process ensures future loads are lightning-fast.
+* Supports **Point** and **Polygon** shapefile data.
+* Automatically extracts asset names, coordinates, and metadata.
+* Converts geospatial data into Unreal Engine world positions using Cesium’s coordinate conversion utilities.
 
-### Stage 2: High-Performance Runtime Generation
-1.  **Cache Check:** On load, the plugin checks if the source Shapefile is unmodified.
-2.  **Database-Driven Spawning:** If a cache exists, it bypasses heavy computation and reads the pre-calculated points directly from the SQLite database.
-3.  **Efficient Actor Spawning:** Spawns actors with PCG components that use the cached data to populate the scene with Hierarchical Instanced Static Meshes, resulting in minimal performance impact and buttery-smooth frame rates.
+### 2. Cesium Terrain Compatibility
 
----
+* Fully compatible with **Cesium World Terrain** and **Google Photorealistic 3D Tilesets**.
+* Ensures accurate height placement via the `CesiumSampleHeightMostDetailed` API.
+* Integrates smoothly with Cesium’s tile-based streaming for efficient large-area rendering.
 
-## 🛠️ Technical Architecture
+### 3. Point-Based Procedural Spawning
 
-```
-[Shapefile (.shp)]
-        |
-        v
-[PCGis Plugin Core]
-        |
-        +---> [Point Data Path] ---> [Spawn Actor at Lat/Long (Clamped to Terrain)]
-        |
-        +---> [Polygon Data Path] ---> [Custom PCG Node] ---> [Cesium Height Sampling]
-                    |                                          |
-                    |                                          v
-                    |                               [SQLite Database (Cache)]
-                    |                                          |
-                    v                                          |
-        [Spline + PCG Component Actor] <-----------------------+
-                    |
-                    v
-        [Runtime HISM Generation]
-```
+* Reads point-type shapefile features to spawn cultural or environmental assets such as:
 
----
+  * Trees, shrubs, stones, walls, buildings, and more.
+* Uses asset or mesh names defined in shapefile attributes.
+* Employs asynchronous height sampling with caching for accurate, terrain-aligned placement.
 
-## 📸 Screenshots / Gallery
+### 4. Polygon-Based Procedural Generation
 
-*(You'll place your screenshots and videos here)*
+* Handles polygon data to procedurally fill defined regions (e.g., vegetation or foliage areas).
+* Creates **Actors** with **Spline Components** and **PCG Components** for each polygon.
+* Includes a **custom PCG node** that samples interior points based on density values from the shapefile.
+* Points are clamped to terrain using Cesium’s height functions before spawning content.
 
-> **Example 1:** A cultural site with point-data-placed assets (stones, walls) and procedurally generated foliage inside polygon boundaries.
-> **Example 2:** A vast forest generated from a land cover polygon Shapefile, showing millions of trees perfectly clamped to a mountainous Cesium terrain.
-> **Example 3:** A video/GIF demonstrating the performance difference between the first (processing) run and the second (cached) run.
+### 5. SQLite Data Caching
 
----
-
-## 🚀 Installation & Usage
-
-### Prerequisites
-*   Unreal Engine 5.1+
-*   [Cesium for Unreal](https://cesium.com/platform/cesium-for-unreal/) Plugin
-*   A Cesium ion account (for terrain/imagery)
-
-### Installation
-1.  Clone this repository into your project's `Plugins` folder.
-2.  Rebuild your project in Visual Studio or Xcode.
-3.  Launch the editor and ensure `PCGis` is enabled in the Plugins list.
-
-### Quick Start
-1.  **Add a PCGis Manager** actor to your level.
-2.  **Configure your Cesium Georeference.**
-3.  **For Point Data:**
-    *   Provide the path to your Point Shapefile.
-    *   Map model names from the attribute table to Unreal Static Meshes.
-4.  **For Polygon Data:**
-    *   Provide the path to your Polygon Shapefile.
-    *   Assign a PCG Graph that uses the included `PCG Cesium Clamp` node.
-    *   Define density and other parameters.
-
----
-
-## 🗺️ Use Cases
-
-*   **Urban Planning & Architecture:** Visualize real-world city data with accurately placed buildings, trees, and street furniture.
-*   **Film & Virtual Production:** Create massive, authentic digital backlots based on real geographic regions.
-*   **Simulation & Training:** Generate high-fidelity environments for flight, driving, or military simulations.
-*   **Game Development:** Populate open-world game maps with realistic, data-driven vegetation and cultural features.
-
----
+* Integrated **SQLite** system stores generated procedural points.
+* On subsequent runs, if the shapefile is unchanged, PCGis loads data from the database rather than recalculating.
+* This reduces runtime cost, avoids FPS drops, and supports **hierarchical runtime generation**.
+* Enables efficient regeneration and loading of **millions of instances**.
 
 <img width="1482" height="950" alt="image" src="https://github.com/user-attachments/assets/c5fa6db4-40b1-44c7-b056-dac0aed134b0" />
+---
 <img width="1484" height="956" alt="image" src="https://github.com/user-attachments/assets/57c0a18d-fcdb-4bca-a148-be0556c9bfe3" />
+---
 <img width="1485" height="959" alt="image" src="https://github.com/user-attachments/assets/e5292646-c2e2-403c-ac1a-d5d131285477" />
+
+---
+
+## System Architecture
+
+| Pipeline       | Purpose                                                                                    | Execution Stage                                |
+| -------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------- |
+| **Pipeline 1** | Reads new/updated shapefiles, generates terrain-clamped points, and stores them in SQLite. | First run (data preparation phase)             |
+| **Pipeline 2** | Loads precomputed points from SQLite and spawns runtime hierarchical PCG actors.           | Subsequent runs (optimized runtime generation) |
+
+---
+
+## Performance Highlights
+
+* Optimized for large GIS datasets (thousands of polygons, millions of points).
+* Database caching eliminates redundant Cesium height sampling.
+* Runtime hierarchical PCG generation ensures smooth performance.
+* Designed for use in **simulation**, **urban planning**, and **geospatial visualization** projects.
+
+---
+
+## Technical Stack
+
+* **Engine:** Unreal Engine 5.4
+* **Terrain System:** Cesium for Unreal
+* **Procedural Framework:** Unreal PCG
+* **Database:** SQLite
+* **GIS Data:** ESRI Shapefile (Point and Polygon types)
+
+---
+
+## Example Applications
+
+* Real-world environment reconstruction and digital twin creation.
+* Simulation and training environments requiring accurate terrain data.
+* City-scale visualization of infrastructure, vegetation, or urban assets.
+* Research and development in procedural content generation with geospatial datasets.
+
+---
+
+
