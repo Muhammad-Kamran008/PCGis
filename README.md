@@ -1,16 +1,9 @@
-Of course! This is a highly specialized and impressive plugin. A good README will showcase the technical depth while making its power and utility clear to potential users and employers.
-
-Here is an attractive, portfolio-ready README for your GitHub repository.
 
 ---
 
 # 🗺️ PCGis: Procedural GIS Data Loader for Unreal Engine & Cesium
 
 **Bridge the gap between Geographic Information Systems (GIS) and high-fidelity Unreal Engine worlds.** PCGis is a powerful plugin that seamlessly imports real-world GIS data from Shapefiles and procedurally generates vast, dynamic landscapes directly onto Cesium's global 3D terrain.
-
-[![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5+-%23313131?logo=unrealengine)](https://www.unrealengine.com)
-[![Cesium](https://img.shields.io/badge/Cesium-Compatible-blue)](https://cesium.com/)
-[![Plugin](https://img.shields.io/badge/Type-Unreal%20Plugin-black)](https://www.unrealengine.com/marketplace/en-US/store)
 
 ---
 
